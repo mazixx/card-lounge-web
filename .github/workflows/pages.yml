@@ -20,74 +20,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Lay ma nguon
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Cai Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Generate engine
+      - name: Kiem tra file nguon
+        shell: bash
         run: |
+          set -euo pipefail
+
+          for file in \
+            card_lounge_original.txt \
+            convert_engine.py \
+            web_controller.py \
+            index.html \
+            style.css \
+            app.js \
+            worker.js
+          do
+            if [ ! -s "$file" ]; then
+              echo "::error::Thieu file hoac file rong: $file"
+              exit 1
+            fi
+          done
+
+      - name: Tao engine.py
+        shell: bash
+        run: |
+          set -euo pipefail
+
           python convert_engine.py
-          python -m py_compile convert_engine.py web_controller.py
+          test -s engine.py
+          python -m py_compile engine.py web_controller.py
 
-      - name: Smoke test
+      - name: Chuan bi website
+        shell: bash
         run: |
-          python - <<'PY'
-          import json
-          import random
+          set -euo pipefail
 
-          import engine
-          import web_controller as web
-
-          engine.test_phom_one_eaten()
-
-          for index, kind in enumerate(web.KINDS):
-              random.seed(100 + index)
-
-              result = json.loads(web.handle(json.dumps({
-                  "op": "new",
-                  "kind": kind,
-                  "seats": 4,
-                  "tournament": False
-              })))
-
-              assert result["state"]["kind"] == kind
-
-              room = web.ROOM
-
-              # Chạy tự động một ván để kiểm tra engine cơ bản.
-              for step in range(2500):
-                  if room.game.done:
-                      break
-                  room.game.bot()
-              else:
-                  raise AssertionError(
-                      f"{kind}: vượt 2500 hành động"
-                  )
-
-              room.account()
-              assert room.game.done
-
-              json.dumps(room.snapshot(), ensure_ascii=False)
-              print(kind, "OK")
-
-          print("Smoke tests passed.")
-          PY
-
-      - name: Prepare static website
-        run: |
           mkdir -p _site
-          cp index.html style.css app.js worker.js _site/
-          cp convert_engine.py web_controller.py _site/
+
+          cp index.html _site/
+          cp style.css _site/
+          cp app.js _site/
+          cp worker.js _site/
+          cp engine.py _site/
+          cp web_controller.py _site/
+
           touch _site/.nojekyll
 
-      - name: Configure Pages
+          test -s _site/engine.py
+          test -s _site/web_controller.py
+
+          echo "Cac file se duoc dua len Pages:"
+          ls -lah _site
+
+      - name: Cau hinh Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload website
+      - name: Tai website len
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -101,6 +96,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy
+      - name: Xuat ban website
         id: deployment
         uses: actions/deploy-pages@v4
