@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102c24">
+
+  <title>Card Lounge</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1>♠ CARD LOUNGE</h1>
+    <p>5 trò chơi • Bot • Tournament • Chỉ dùng xu ảo</p>
+  </header>
+
+  <section class="toolbar">
+    <label>
+      Trò chơi
+      <select id="kind">
+        <option>Tiến lên</option>
+        <option>Tá lả</option>
+        <option>Poker</option>
+        <option>Ba cào</option>
+        <option>Bầu cua</option>
+      </select>
+    </label>
+
+    <label>
+      Chế độ
+      <select id="mode">
+        <option value="quick">Ván nhanh</option>
+        <option value="tournament">Tournament 32</option>
+      </select>
+    </label>
+
+    <label>
+      Ghế
+      <select id="seats">
+        <option>2</option>
+        <option>3</option>
+        <option selected>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+      </select>
+    </label>
+
+    <label>
+      Tốc độ
+      <select id="speed">
+        <option value="1400">Chậm</option>
+        <option value="800" selected>Vừa</option>
+        <option value="220">Nhanh</option>
+      </select>
+    </label>
+
+    <button id="start" disabled>Bắt đầu / Chơi lại</button>
+    <button id="pause" disabled>Tạm dừng</button>
+    <button id="report" disabled>Bảng kết quả</button>
+  </section>
+
+  <div id="loading" role="status">Đang tải Python cho trình duyệt…</div>
+  <div id="error" role="alert"></div>
+
+  <main>
+    <section class="table">
+      <h2 id="session">CARD LOUNGE</h2>
+      <div id="opponents"></div>
+
+      <section class="center">
+        <div class="dealer">D</div>
+        <div id="summary">Chuẩn bị bàn chơi</div>
+        <div id="centerCards" class="cards"></div>
+        <div id="bcBoard"></div>
+        <div id="status"></div>
+        <strong id="countdown"></strong>
+      </section>
+
+      <div id="human"></div>
+
+      <div id="actions" class="actions"></div>
+
+      <div class="actions">
+        <button id="hint" disabled>Phân tích AI</button>
+        <button id="clear" disabled>Bỏ chọn</button>
+        <button id="next" disabled>Ván tiếp theo</button>
+      </div>
+    </section>
+
+    <aside>
+      <h3>Phân tích / Kết quả</h3>
+      <pre id="analysis">Chọn trò rồi bấm Bắt đầu.</pre>
+
+      <h3>Diễn biến</h3>
+      <pre id="logs"></pre>
+    </aside>
+  </main>
+
+  <footer>
+    Chạm lá bài để chọn. Lá được chọn nhô lên.
+    Poker/Bầu cua giữ số dư theo phiên.
+    <br>
+    Đóng hoặc tải lại trang sẽ mất ván hiện tại.
+    Đây là trò chơi mô phỏng, không có nạp/rút tiền.
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
