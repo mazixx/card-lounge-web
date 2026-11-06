@@ -31,7 +31,7 @@ jobs:
       - name: Generate engine
         run: |
           python convert_engine.py
-          python -m py_compile engine.py web_controller.py
+          python -m py_compile convert_engine.py web_controller.py
 
       - name: Smoke test
         run: |
@@ -81,7 +81,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html style.css app.js worker.js _site/
-          cp engine.py web_controller.py _site/
+          cp convert_engine.py web_controller.py _site/
           touch _site/.nojekyll
 
       - name: Configure Pages
