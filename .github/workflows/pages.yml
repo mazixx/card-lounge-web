@@ -1,0 +1,106 @@
+name: Deploy Card Lounge Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate engine
+        run: |
+          python convert_engine.py
+          python -m py_compile engine.py web_controller.py
+
+      - name: Smoke test
+        run: |
+          python - <<'PY'
+          import json
+          import random
+
+          import engine
+          import web_controller as web
+
+          engine.test_phom_one_eaten()
+
+          for index, kind in enumerate(web.KINDS):
+              random.seed(100 + index)
+
+              result = json.loads(web.handle(json.dumps({
+                  "op": "new",
+                  "kind": kind,
+                  "seats": 4,
+                  "tournament": False
+              })))
+
+              assert result["state"]["kind"] == kind
+
+              room = web.ROOM
+
+              # Chạy tự động một ván để kiểm tra engine cơ bản.
+              for step in range(2500):
+                  if room.game.done:
+                      break
+                  room.game.bot()
+              else:
+                  raise AssertionError(
+                      f"{kind}: vượt 2500 hành động"
+                  )
+
+              room.account()
+              assert room.game.done
+
+              json.dumps(room.snapshot(), ensure_ascii=False)
+              print(kind, "OK")
+
+          print("Smoke tests passed.")
+          PY
+
+      - name: Prepare static website
+        run: |
+          mkdir -p _site
+          cp index.html style.css app.js worker.js _site/
+          cp engine.py web_controller.py _site/
+          touch _site/.nojekyll
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
